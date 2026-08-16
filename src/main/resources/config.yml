@@ -1,0 +1,85 @@
+# StaffCommands — staff command aliases registered as real, permission-gated
+# commands, so players without the permission can neither see them on `/` nor run
+# them. Add/edit aliases here and RESTART (no recompile; /reload is disabled — see
+# NOTES.md).
+#
+# Each entry under `aliases`:
+#   permission : gates BOTH visibility and use. Gate on the permission of the
+#                action itself, so "can see it" == "can use it".
+#   aliases    : (optional) extra names for the command.
+#   commands   : lines to run, in order. Placeholders: {player} = first arg,
+#                {args} = the rest (e.g. a reason).
+#
+# Run-as: a line runs as the SENDER (the staff member) by default — needed to keep
+# their identity (e.g. ban's `source` = staff name) AND their POSITION (~ /
+# distance= are relative to the executor; the console sits at world origin 0,0,0).
+# Prefix a line with "@console " to run it as the console instead — for sub-steps
+# the staff member shouldn't need their own permission for (Discord broadcast,
+# tellraw @a), or that are already anchored elsewhere (execute at {player} ...).
+#
+# Required arguments are derived from the placeholders, reproducing what the
+# commands.yml `$$1` / `$$2-` tokens enforced: a template using {player} demands at
+# least 1 argument, one using {args} demands 2. Too few and the whole alias is
+# refused with a usage line, so no follow-up (a Discord broadcast, say) can announce
+# something that never happened. Tab completion offers online player names for the
+# first argument of any alias that takes one.
+aliases:
+  ban:
+    permission: minecraft.command.ban
+    aliases: [gban]
+    commands:
+      - "minecraft:ban {player} {args}"
+      - "@console discordsrv:discord broadcast :hammer: **Banned {player} for {args}**"
+  unban:
+    permission: minecraft.command.pardon
+    commands:
+      - "minecraft:pardon {player}"
+      - "@console discordsrv:discord broadcast :cross: **Unbanned {player}**"
+  kick:
+    permission: minecraft.command.kick
+    commands:
+      - "minecraft:kick {player} {args}"
+      - "@console discordsrv:discord broadcast :boot: **Kicked {player} for {args}**"
+  jail:
+    permission: minecraft.command.function
+    commands:
+      # `as` without `at` leaves the base position wherever the caller stood — the
+      # world origin under @console — but custom:admin/jail re-anchors itself with
+      # `execute in minecraft:world_2026 at @s run ...` and teleports to absolute
+      # coords, so the caller's position never enters into it. Verified against the
+      # datapack 2026-08-14; recheck if that function is ever rewritten.
+      - "@console execute as {player} run function custom:admin/jail"
+  buff:
+    permission: minecraft.command.function
+    commands:
+      # custom:admin/buff is `effect give @s ...` throughout — position-independent.
+      - "@console execute as {player} run function custom:admin/buff"
+  strike:
+    permission: minecraft.command.summon
+    commands:
+      # `at {player}` anchors position to the target, so @console is correct here.
+      - "@console execute at {player} run summon lightning_bolt"
+  magickill:
+    permission: minecraft.command.effect
+    commands:
+      - "@console minecraft:effect give {player} minecraft:instant_damage 1 5"
+  party:
+    permission: staffcommands.party
+    commands:
+      # The only alias with an invented node (default: op in plugin.yml), because it
+      # is a macro with no single underlying command to gate on. Its steps run as
+      # @console, so granting this node hands out mute/jail/damage without the
+      # underlying permissions — intended, but keep that in mind before granting it.
+      - "@console silentmute mute {player}"
+      - "@console execute as {player} run function custom:admin/jail"
+      - "@console minecraft:effect give {player} minecraft:instant_damage 1 5"
+  exphantom:
+    permission: minecraft.command.kill
+    commands:
+      # runs as SENDER: distance=..32 is relative to the staff member's position
+      - "kill @e[distance=..32,type=minecraft:phantom]"
+  extinguish:
+    permission: minecraft.command.fill
+    commands:
+      # runs as SENDER: ~ is relative to the staff member's position
+      - "fill ~-10 ~-10 ~-10 ~10 ~10 ~10 minecraft:air replace minecraft:fire"

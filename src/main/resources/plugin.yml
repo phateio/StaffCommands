@@ -1,0 +1,10 @@
+name: ${name}
+version: ${version}
+main: io.github.phateio.staffcommands.StaffCommands
+api-version: "1.21"
+author: shikendon
+description: Permission-gated replacements for the staff aliases in commands.yml
+permissions:
+  staffcommands.party:
+    description: Use the /party staff punishment macro.
+    default: op
