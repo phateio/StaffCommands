@@ -44,10 +44,13 @@ aliases:
     permission: minecraft.command.function
     commands:
       # `as` without `at` leaves the base position wherever the caller stood — the
-      # world origin under @console — but custom:admin/jail re-anchors itself with
-      # `execute in minecraft:world_2026 at @s run ...` and teleports to absolute
-      # coords, so the caller's position never enters into it. Verified against the
-      # datapack 2026-08-14; recheck if that function is ever rewritten.
+      # world origin under @console — but custom:admin/jail never reads it: every
+      # world command in it is `execute in minecraft:world_2026 run ...` with
+      # absolute coords, `spawnpoint @s 335 99 -234` included. Do not re-add `at @s`
+      # there — `at` overrides the dimension `in` just set, and a coord-less
+      # `spawnpoint @s` records the player's real position, which for a dead player
+      # is their death block (`tp` is silently ignored while dead, `spawnpoint` is
+      # not). Verified against the datapack 2026-09-04; recheck if it is rewritten.
       - "@console execute as {player} run function custom:admin/jail"
   buff:
     permission: minecraft.command.function
